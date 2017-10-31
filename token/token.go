@@ -18,6 +18,12 @@ const (
 	// operators
 	ASSIGN		= "="
 	PLUS		= "+"
+	MINUS		= "-"
+	BANG		= "!"
+	ASTERISK	= "*"
+	SLASH		= "/"
+	LT			= "<"
+	GT			= ">"
 
 	// delimiters
 	COMMA		= ","
@@ -58,6 +64,12 @@ var tokenTypes = map[rune]TokenType{
 	'+':	PLUS,
 	'{':	LBRACE,
 	'}':	RBRACE,
+	'-':	MINUS,
+	'!':	BANG,
+	'*':	ASTERISK,
+	'/':	SLASH,
+	'<':	LT,
+	'>':	GT,
 }
 
 func SingleChar(ch rune) (TokenType, bool) {
