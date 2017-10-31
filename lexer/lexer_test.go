@@ -40,13 +40,13 @@ func TestNextToken1(t *testing.T) {
 
 func TestNextToken2(t *testing.T) {
 	input := `let five = 5;
-	let ten = 10;
+	let tén = 10;
 
-	let add = fn(x, y) {
-		x + y;
+	let add = fn(ᾬ, y) {
+		ᾬ + y;
 	};
 
-	let result = add(five, ten);
+	let result = add(five, tén);
 	`
 
 	tests := []struct{
@@ -59,7 +59,7 @@ func TestNextToken2(t *testing.T) {
 		{token.INT, "5"},
 		{token.SEMICOLON, ";"},
 		{token.LET, "let"},
-		{token.IDENT, "ten"},
+		{token.IDENT, "tén"},
 		{token.ASSIGN, "="},
 		{token.INT, "10"},
 		{token.SEMICOLON, ";"},
@@ -68,12 +68,12 @@ func TestNextToken2(t *testing.T) {
 		{token.ASSIGN, "="},
 		{token.FUNCTION, "fn"},
 		{token.LPAREN, "("},
-		{token.IDENT, "x"},
+		{token.IDENT, "ᾬ"},
 		{token.COMMA, ","},
 		{token.IDENT, "y"},
 		{token.RPAREN, ")"},
 		{token.LBRACE, "{"},
-		{token.IDENT, "x"},
+		{token.IDENT, "ᾬ"},
 		{token.PLUS, "+"},
 		{token.IDENT, "y"},
 		{token.SEMICOLON, ";"},
@@ -86,7 +86,7 @@ func TestNextToken2(t *testing.T) {
 		{token.LPAREN, "("},
 		{token.IDENT, "five"},
 		{token.COMMA, ","},
-		{token.IDENT, "ten"},
+		{token.IDENT, "tén"},
 		{token.RPAREN, ")"},
 		{token.SEMICOLON, ";"},
 		{token.EOF, ""},

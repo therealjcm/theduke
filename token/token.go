@@ -33,7 +33,7 @@ const (
 	LET			= "LET"
 	)
 
-func New(tokenType TokenType, ch byte) Token {
+func New(tokenType TokenType, ch rune) Token {
 	return Token{Type: tokenType, Literal: string(ch)}
 }
 
@@ -49,7 +49,7 @@ func LookupIdent(ident string) TokenType {
 	return IDENT
 }
 
-var tokenTypes = map[byte]TokenType{
+var tokenTypes = map[rune]TokenType{
 	'=':	ASSIGN,
 	';':	SEMICOLON,
 	'(':	LPAREN,
@@ -60,7 +60,7 @@ var tokenTypes = map[byte]TokenType{
 	'}':	RBRACE,
 }
 
-func SingleChar(ch byte) (TokenType, bool) {
+func SingleChar(ch rune) (TokenType, bool) {
 	t, ok := tokenTypes[ch];
 	if ok {
 		return t, true

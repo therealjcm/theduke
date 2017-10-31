@@ -2,13 +2,15 @@ package lexer
 
 import (
 	"theduke/token"
+	"unicode/utf8"
+	"unicode"
 )
 
 type Lexer struct {
 	input			string
 	position		int		// current position in input
 	readPosition	int		// current reading position in input
-	ch				byte	// current char under examination
+	ch				rune	// current char under examination
 }
 
 func New(input string) *Lexer {
@@ -18,13 +20,14 @@ func New(input string) *Lexer {
 }
 
 func (l *Lexer) readChar() {
+	var width int
 	if l.readPosition >= len(l.input) {
 		l.ch = 0
 	} else {
-		l.ch = l.input[l.readPosition]
+		l.ch, width = utf8.DecodeRuneInString(l.input[l.readPosition:])
 	}
 	l.position = l.readPosition
-	l.readPosition++
+	l.readPosition += width
 }
 
 
@@ -35,11 +38,11 @@ func (l *Lexer) NextToken() (tok token.Token) {
 	}
 	t, isSingle := token.SingleChar(l.ch); if isSingle {
 		tok = token.New(t, l.ch)
-	} else if isLetter(l.ch) {
+	} else if unicode.IsLetter(l.ch) {
 		tok.Literal = l.readIdentifier()
 		tok.Type = token.LookupIdent(tok.Literal)
 		return // readIdentifier has already moved us to next position
-	} else if isDigit(l.ch) {
+	} else if unicode.IsDigit(l.ch) {
 		tok.Type = token.INT
 		tok.Literal = l.readNumber()
 		return // readNumber has already moved us to the next position
@@ -56,17 +59,9 @@ func (l *Lexer) skipWhiteSpace() {
 	}
 }
 
-func isDigit(ch byte) bool {
-	return '0' <= ch && ch <= '9'
-}
-
-func isLetter(ch byte) bool {
-	return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch == '_'
-}
-
 func (l *Lexer) readNumber() string {
 	startPos := l.position
-	for isDigit(l.ch) {
+	for unicode.IsDigit(l.ch) {
 		l.readChar()
 	}
 	return l.input[startPos:l.position]
@@ -74,7 +69,7 @@ func (l *Lexer) readNumber() string {
 
 func (l *Lexer) readIdentifier() string {
 	startPos := l.position
-	for isLetter(l.ch) {
+	for unicode.IsLetter(l.ch) {
 		l.readChar()
 	}
 	return l.input[startPos:l.position]
