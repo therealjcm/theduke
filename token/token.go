@@ -1,5 +1,9 @@
 package token
 
+import (
+	"unicode"
+)
+
 type TokenType string
 
 type Token struct {
@@ -24,6 +28,10 @@ const (
 	SLASH		= "/"
 	LT			= "<"
 	GT			= ">"
+	LTE			= "<="
+	GTE			= ">="
+	EQ			= "=="
+	NE			= "!="
 
 	// delimiters
 	COMMA		= ","
@@ -37,15 +45,49 @@ const (
 	// keywords
 	FUNCTION	= "FUNCTION"
 	LET			= "LET"
+	TRUE		= "TRUE"
+	FALSE		= "FALSE"
+	IF			= "IF"
+	ELSE		= "ELSE"
+	RETURN		= "RETURN"
 	)
 
 func New(tokenType TokenType, ch rune) Token {
 	return Token{Type: tokenType, Literal: string(ch)}
 }
 
+var operators = map[string]TokenType{
+	"=":	ASSIGN,
+	"+":	PLUS,
+	"-":	MINUS,
+	"!":	BANG,
+	"*":	ASTERISK,
+	"/":	SLASH,
+	"<":	LT,
+	"<=":	LTE,
+	">":	GT,
+	">=":	GTE,
+	"==":	EQ,
+	"!=":	NE,
+}
+
+var delimiters = map[rune]TokenType{
+	'{':	LBRACE,
+	'}':	RBRACE,
+	';':	SEMICOLON,
+	'(':	LPAREN,
+	')':	RPAREN,
+	',':	COMMA,
+}
+
 var keywords = map[string]TokenType{
 	"fn":		FUNCTION,
 	"let":		LET,
+	"true":		TRUE,
+	"false":	FALSE,
+	"if":		IF,
+	"else":		ELSE,
+	"return":	RETURN,
 }
 
 func LookupIdent(ident string) TokenType {
@@ -55,27 +97,47 @@ func LookupIdent(ident string) TokenType {
 	return IDENT
 }
 
-var tokenTypes = map[rune]TokenType{
-	'=':	ASSIGN,
-	';':	SEMICOLON,
-	'(':	LPAREN,
-	')':	RPAREN,
-	',':	COMMA,
-	'+':	PLUS,
-	'{':	LBRACE,
-	'}':	RBRACE,
-	'-':	MINUS,
-	'!':	BANG,
-	'*':	ASTERISK,
-	'/':	SLASH,
-	'<':	LT,
-	'>':	GT,
+func LookupOperator(candidate string) TokenType {
+	tt, ok := operators[candidate];
+	if ok {
+		return tt
+	}
+	return ILLEGAL
 }
 
-func SingleChar(ch rune) (TokenType, bool) {
-	t, ok := tokenTypes[ch];
-	if ok {
-		return t, true
+var operatorChar = make(map[rune]bool)
+
+func init() {
+	// populate operatorChar with char that make up all the strings for defined operators
+	for str := range operators {
+		for _, ch := range str {
+			operatorChar[ch] = true
+		}
 	}
-	return ILLEGAL, false
+}
+
+func IsDelimiter(ch rune) bool {
+	_, ok := delimiters[ch]; if ok {
+		return true
+	}
+	return false
+}
+
+func LookupDelimiter(ch rune) TokenType {
+	tt, ok := delimiters[ch]; if ok {
+		return tt
+	}
+	return ILLEGAL
+}
+
+func IsOperator(ch rune) bool {
+	return operatorChar[ch]
+}
+
+func IsIdentifier(ch rune) bool {
+	return unicode.IsLetter(ch)
+}
+
+func IsNumber(ch rune) bool {
+	return unicode.IsDigit(ch)
 }

@@ -30,38 +30,56 @@ func (l *Lexer) readChar() {
 	l.readPosition += width
 }
 
+func (l *Lexer) peekChar() rune {
+	if l.readPosition >= len(l.input) {
+		return 0
+	}
+	ch, _ := utf8.DecodeRuneInString(l.input[l.readPosition:])
+	return ch
+}
 
 func (l *Lexer) NextToken() (tok token.Token) {
 	l.skipWhiteSpace()
 	if l.ch == 0 {
 		return token.Token{Type: token.EOF, Literal:""}
 	}
-	t, isSingle := token.SingleChar(l.ch); if isSingle {
-		tok = token.New(t, l.ch)
-	} else if unicode.IsLetter(l.ch) {
+	if token.IsOperator(l.ch) {
+		tok.Literal = l.readOperator()
+		tok.Type = token.LookupOperator(tok.Literal)
+	} else if token.IsIdentifier(l.ch) {
 		tok.Literal = l.readIdentifier()
 		tok.Type = token.LookupIdent(tok.Literal)
-		return // readIdentifier has already moved us to next position
-	} else if unicode.IsDigit(l.ch) {
+	} else if token.IsNumber(l.ch) {
 		tok.Type = token.INT
 		tok.Literal = l.readNumber()
-		return // readNumber has already moved us to the next position
+	} else if token.IsDelimiter(l.ch) {
+		tt := token.LookupDelimiter(l.ch)
+		tok = token.New(tt, l.ch)
+		l.readChar() // advance past delimiter
 	} else {
 		tok = token.New(token.ILLEGAL, l.ch)
+		l.readChar() // skip past illegal token
 	}
-	l.readChar()
 	return
 }
 
+func (l *Lexer) readOperator() string {
+	startPos := l.position
+	for token.IsOperator(l.ch) {
+		l.readChar()
+	}
+	return l.input[startPos:l.position]
+}
+
 func (l *Lexer) skipWhiteSpace() {
-	for l.ch == ' ' || l.ch == '\t' || l.ch == '\n' || l.ch == '\r' {
+	for (unicode.IsSpace(l.ch)) {
 		l.readChar()
 	}
 }
 
 func (l *Lexer) readNumber() string {
 	startPos := l.position
-	for unicode.IsDigit(l.ch) {
+	for token.IsNumber(l.ch) {
 		l.readChar()
 	}
 	return l.input[startPos:l.position]
@@ -69,7 +87,7 @@ func (l *Lexer) readNumber() string {
 
 func (l *Lexer) readIdentifier() string {
 	startPos := l.position
-	for unicode.IsLetter(l.ch) {
+	for token.IsIdentifier(l.ch) {
 		l.readChar()
 	}
 	return l.input[startPos:l.position]
